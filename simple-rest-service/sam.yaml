@@ -1,0 +1,198 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  MyFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs6.10
+      CodeUri: 's3://microservice-samples/simple-rest-service/code.zip'
+      Role:
+        Fn::GetAtt:
+          - LambdaRole
+          - Arn
+  MyAPI:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: 'v1'
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          version: 1.0.0
+          title: Swagger Petstore
+        basePath: /v1
+        schemes:
+          - http
+        consumes:
+          - application/json
+        produces:
+          - application/json
+        paths:
+          /pets/{petId}:
+            get:
+              summary: Info for a specific pet
+              parameters:
+                - name: petId
+                  in: path
+                  required: true
+                  description: The id of the pet to retrieve
+                  type: string
+              responses:
+                "200":
+                  description: Expected response to a valid request
+                  schema:
+                    $ref: '#/definitions/Pet'
+                default:
+                  description: unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: '200'
+                uri:
+                  Fn::Join:
+                    - ""
+                    -
+                      - "arn:aws:apigateway:"
+                      - Ref: "AWS::Region"
+                      - ":lambda:path/2015-03-31/functions/"
+                      - Fn::GetAtt:
+                        - MyFunction
+                        - Arn
+                      - "/invocations"
+                passthroughBehavior: when_no_match
+                httpMethod: POST
+                contentHandling: CONVERT_TO_TEXT
+                type: aws_proxy
+            put:
+              summary: Create a pet
+              parameters:
+                - name: petId
+                  in: path
+                  required: true
+                  description: The id of the pet to create
+                  type: string
+                - name: body
+                  in: body
+                  schema:
+                    $ref: '#/definitions/Pet'
+              responses:
+                "200":
+                  description: Expected response to a valid request
+                  schema:
+                    $ref: '#/definitions/PetIdResponse'
+                default:
+                  description: unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: '200'
+                uri:
+                  Fn::Join:
+                    - ""
+                    -
+                      - "arn:aws:apigateway:"
+                      - Ref: "AWS::Region"
+                      - ":lambda:path/2015-03-31/functions/"
+                      - Fn::GetAtt:
+                        - MyFunction
+                        - Arn
+                      - "/invocations"
+                passthroughBehavior: when_no_match
+                httpMethod: POST
+                contentHandling: CONVERT_TO_TEXT
+                type: aws_proxy
+        definitions:
+          PetIdResponse:
+            properties:
+              id:
+                type: string
+          Pet:
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              tag:
+                type: string
+          Pets:
+            type: array
+            items:
+              $ref: '#/definitions/Pet'
+          Error:
+            required:
+              - code
+              - message
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+  MyDB:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'pets'
+      AttributeDefinitions:
+        - AttributeName: 'id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'id'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyName: LambdaDynamoAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllAPIActionsOnSpecificTable
+                Effect: Allow
+                Action:
+                  - dynamodb:*
+                Resource:
+                  Fn::Sub: "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MyDB}"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+  LambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+          - 'MyFunction'
+          - 'Arn'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          -
+            - 'arn:aws:execute-api:'
+            - Ref: 'AWS::Region'
+            - ':'
+            - Ref: 'AWS::AccountId'
+            - ':'
+            - Ref: MyAPI
+            - '/*/*/*'

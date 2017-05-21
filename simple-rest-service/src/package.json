@@ -1,0 +1,11 @@
+{
+  "scripts": {
+
+  },
+  "dependencies": {
+    "alpr": "^0.2.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.54.0"
+  }
+}
