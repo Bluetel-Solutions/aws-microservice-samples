@@ -196,3 +196,15 @@ Resources:
             - ':'
             - Ref: MyAPI
             - '/*/*/*'
+Outputs:
+  APIGatewayBaseUrl:
+    Description: The base url of the created API.
+    Value:
+      Fn::Join:
+        - ""
+        -
+          - 'https://'
+          - Ref: 'MyAPI'
+          - '.execute-api.'
+          - Ref: 'AWS::Region'
+          - '.amazonaws.com/v1'
