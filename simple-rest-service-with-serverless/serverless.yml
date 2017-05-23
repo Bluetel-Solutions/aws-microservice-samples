@@ -36,6 +36,8 @@ package:
 functions:
   pets:
     handler: src/index.handler
+    environment:
+      petTable: ${self:custom.petTableName}
     events:
       - http: get pets/{petId}
       - http: put pets/{petId}
@@ -43,7 +45,7 @@ functions:
 # CloudFormation resource templates
 resources:
  Resources:
-  "PetDB${self:provider.stage}":
+  PetDB:
     Type: 'AWS::DynamoDB::Table'
     Properties:
       TableName: ${self:custom.petTableName}
@@ -62,4 +64,4 @@ custom:
   defaultProfile: default
   defaultRegion: eu-west-1
   defaultStage: dev
-  petTableName: pets
+  petTableName: pets-${self:provider.stage}
