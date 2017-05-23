@@ -1,0 +1,20 @@
+machine:
+  node:
+    version: 6.1.0
+  environment:
+    STAGE_DEV: dev
+    STAGE_PROD: prod
+
+dependencies:
+  pre:
+    - npm install -g serverless
+
+deployment:
+  dev:
+    branch: develop
+    commands:
+      - cd simple-rest-service-with-serverless && ./deploy.sh $STAGE_DEV
+  prod:
+    branch: master
+    commands:
+      - cd simple-rest-service-with-serverless && ./deploy.sh $STAGE_PROD

@@ -1,0 +1,51 @@
+service: microservice-demo
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+# overwrite defaults here
+  profile: ${opt:profile, self:custom.defaultProfile}
+  region: ${opt:region, self:custom.defaultRegion}
+  stage: ${opt:stage, env:AWS_STAGE, self:custom.defaultStage}
+
+# packaging information
+package:
+ exclude:
+  - circle.yml
+  - deploy.sh
+  - src/**
+ include:
+  - src/index.js
+  - src/node_modules/alpr/**
+
+# lambda function definitions
+functions:
+  pets:
+    handler: index.handler
+    events:
+      - http: get pets/{id}
+      - http: put pets/{id}
+
+# CloudFormation resource templates
+resources:
+ Resources:
+  PetDB:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'pets'
+      AttributeDefinitions:
+        - AttributeName: 'id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'id'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+# custom config
+custom:
+  defaultProfile: default
+  defaultRegion: eu-west-1
+  defaultStage: dev
