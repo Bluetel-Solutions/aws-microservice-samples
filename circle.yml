@@ -7,7 +7,10 @@ machine:
 
 dependencies:
   override:
-    - npm install -g serverless
+    - npm install -g serverless yarn
+    - |
+      cd simple-rest-service-with-serverless/src/ &&
+      yarn install
 
 deployment:
   dev:

@@ -22,7 +22,7 @@ package:
 # lambda function definitions
 functions:
   pets:
-    handler: index.handler
+    handler: src/index.handler
     events:
       - http: get pets/{petId}
       - http: put pets/{petId}
