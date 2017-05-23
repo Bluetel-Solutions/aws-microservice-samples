@@ -6,7 +6,7 @@ machine:
     STAGE_PROD: prod
 
 dependencies:
-  pre:
+  override:
     - npm install -g serverless
 
 deployment:
