@@ -37,7 +37,7 @@ functions:
   pets:
     handler: src/index.handler
     environment:
-      petTable: ${self:custom.petTableName}-${self:provider.stage}
+      petTable: ${self:custom.petTableName}
     events:
       - http: get pets/{petId}
       - http: put pets/{petId}
@@ -48,7 +48,7 @@ resources:
   PetDB:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: ${self:custom.petTableName}-${self:provider.stage}
+      TableName: ${self:custom.petTableName}
       AttributeDefinitions:
         - AttributeName: 'id'
           AttributeType: 'S'
@@ -64,4 +64,4 @@ custom:
   defaultProfile: default
   defaultRegion: eu-west-1
   defaultStage: dev
-  petTableName: pets
+  petTableName: pets-${self:provider.stage}
