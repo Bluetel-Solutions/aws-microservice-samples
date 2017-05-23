@@ -14,5 +14,9 @@
     "aws-sdk": "^2.55.0",
     "nyc": "^10.3.2",
     "xo": "^0.18.2"
+  },
+  "scripts": {
+    "test": "nyc --check-coverage --lines 100 --functions 100 --branches 100 ava",
+    "report": "nyc report --reporter=html"
   }
 }
