@@ -24,8 +24,8 @@ functions:
   pets:
     handler: index.handler
     events:
-      - http: get pets/{id}
-      - http: put pets/{id}
+      - http: get pets/{petId}
+      - http: put pets/{petId}
 
 # CloudFormation resource templates
 resources:
