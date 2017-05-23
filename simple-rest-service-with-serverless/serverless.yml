@@ -14,7 +14,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:*
-      Resource: "arn:aws:dynamodb:${opt:region, self:custom.defaultRegion}:*:table/${self:custom.petTableName}"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.petTableName}"
     - Effect: Allow
       Action:
         - logs:CreateLogGroup
@@ -43,7 +43,7 @@ functions:
 # CloudFormation resource templates
 resources:
  Resources:
-  PetDB:
+  "PetDB${self:provider.stage}":
     Type: 'AWS::DynamoDB::Table'
     Properties:
       TableName: ${self:custom.petTableName}
