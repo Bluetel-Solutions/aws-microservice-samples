@@ -7,6 +7,7 @@ const Alpr = require('alpr').default;
 const AWS = require('aws-sdk'); // eslint-disable-line
 
 const dynamoDoc = new AWS.DynamoDB.DocumentClient();
+const petTable = process.env.petTable; // This is defined in the serverless.yml file.
 
 /**
  * Request handler. Entry point to the microservice. This isn't the way I would usually structure a
@@ -25,7 +26,7 @@ function handler(event, context, callback) {
     path: '/pets/{petId}',
     handler(request, response) {
       const params = {
-        TableName: 'pets', // This is defined in the SAM file.
+        TableName: petTable,
         Item: request.body,
       };
 
@@ -47,7 +48,7 @@ function handler(event, context, callback) {
     path: '/pets/{petId}',
     handler(request, response) {
       const params = {
-        TableName: 'pets',
+        TableName: petTable,
         Key: {
           id: request.pathParameters.petId,
         },
