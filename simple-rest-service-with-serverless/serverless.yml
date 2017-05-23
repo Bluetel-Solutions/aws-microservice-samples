@@ -4,10 +4,23 @@ provider:
   name: aws
   runtime: nodejs6.10
 
-# overwrite defaults here
+  # overwrite defaults here
   profile: ${opt:profile, self:custom.defaultProfile}
   region: ${opt:region, self:custom.defaultRegion}
   stage: ${opt:stage, env:AWS_STAGE, self:custom.defaultStage}
+
+  # resource permissions
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "arn:aws:dynamodb:${opt:region, self:custom.defaultRegion}:*:table/${self:custom.petTableName}"
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
 
 # packaging information
 package:
@@ -33,7 +46,7 @@ resources:
   PetDB:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: 'pets'
+      TableName: ${self:custom.petTableName}
       AttributeDefinitions:
         - AttributeName: 'id'
           AttributeType: 'S'
@@ -43,37 +56,10 @@ resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
-  LambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Policies:
-        - PolicyName: LambdaDynamoAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Sid: AllAPIActionsOnSpecificTable
-                Effect: Allow
-                Action:
-                  - dynamodb:*
-                Resource:
-                  Fn::Sub: "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${PetDB}"
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: ""
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
 
 # custom config
 custom:
   defaultProfile: default
   defaultRegion: eu-west-1
   defaultStage: dev
+  petTableName: pets
