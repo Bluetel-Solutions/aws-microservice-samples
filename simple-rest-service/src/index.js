@@ -35,10 +35,7 @@ function handler(event, context, callback) {
           response({
             statusCode: 200,
             headers: {},
-            body: {
-              status: 'success',
-              data: { id: params.Item.id },
-            },
+            body: params.Item,
           });
         });
     },
@@ -61,10 +58,7 @@ function handler(event, context, callback) {
           response({
             statusCode: 200,
             headers: {},
-            body: {
-              status: 'success',
-              data: result.Item,
-            },
+            body: result.Item,
           });
         });
     },
