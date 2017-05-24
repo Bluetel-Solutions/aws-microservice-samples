@@ -12,6 +12,10 @@ dependencies:
       cd simple-rest-service-with-serverless/src/ &&
       yarn install
 
+test:
+  override:
+    - npm test && npm run report -- --report-dir ${CIRCLE_ARTIFACTS}/coverage
+
 deployment:
   dev:
     branch: develop
