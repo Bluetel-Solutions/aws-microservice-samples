@@ -1,26 +1,42 @@
-import test from 'ava';
-import m from '../';
+const test = require('ava');
+const sinon = require('sinon');
+const AWS = require('aws-sdk');
+const handler = require('../index').handler;
 
-const putPet = {
+const pet = {
   species: "dog",
   breed: "great dane",
   name: "marmaduke"
 };
 
-const getPet = {
-  species: "dog",
-  breed: "great dane",
-  name: "marmaduke"
-};
+test.cb('put pet success', t => {
+  const stub = sinon.stub(AWS.DynamoDB.DocumentClient.prototype, 'put');
+  t.plan(1);
+  stub.returns({
+    promise() {
+      return Promise.resolve(pet);
+    },
+  });
 
-test('put pet success', t => {
-  t.pass();
+  handler({ httpMethod: 'PUT', resource: '/pets/{petId}', body: JSON.stringify(pet) }, {}, (err, response) => {
+    stub.restore();
+    t.deepEqual(JSON.parse(response.body), pet);
+    t.end();
+  });
 });
 
-test('get pet success', t => {
-  t.pass();
-});
+test.cb('put get success', t => {
+  const stub = sinon.stub(AWS.DynamoDB.DocumentClient.prototype, 'get');
+  t.plan(1);
+  stub.returns({
+    promise() {
+      return Promise.resolve({ Item: pet });
+    },
+  });
 
-test('post pet fail', t => {
-  t.pass();
+  handler({ httpMethod: 'GET', resource: '/pets/{petId}', body: JSON.stringify(pet) }, {}, (err, response) => {
+    stub.restore();
+    t.deepEqual(JSON.parse(response.body), pet);
+    t.end();
+  });
 });
