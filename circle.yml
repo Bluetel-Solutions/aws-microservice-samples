@@ -14,7 +14,9 @@ dependencies:
 
 test:
   override:
-    - npm test && npm run report -- --report-dir ${CIRCLE_ARTIFACTS}/coverage
+    - |
+      cd simple-rest-service-with-serverless/src/ &&
+      npm test && npm run report -- --report-dir ${CIRCLE_ARTIFACTS}/coverage
 
 deployment:
   dev:
